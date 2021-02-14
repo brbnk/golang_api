@@ -18,7 +18,7 @@ func main() {
 	env := config.Get()
 
 	srv := server.Get().
-		WithAdrress(env.Srv.APIPort).
+		WithAdrress(":" + env.Srv.APIPort).
 		WithRouter(router.Get())
 
 	log.Fatal(srv.Start())
