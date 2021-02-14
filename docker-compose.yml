@@ -29,12 +29,15 @@ services:
   adminer:
     image: adminer
     restart: on-failure
+    depends_on:
+      - mysqlsrv
     ports:
       - 8080:8080
     networks:
       - erpnetwork
 
   api:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
