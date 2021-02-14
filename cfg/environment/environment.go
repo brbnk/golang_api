@@ -14,6 +14,7 @@ type Configurations struct {
 	DBName     string
 	DBPort     string
 	DBHost     string
+	migrate    string
 }
 
 func Get() *Configurations {
@@ -26,6 +27,7 @@ func Get() *Configurations {
 	flag.StringVar(&config.DBName, "database", os.Getenv("MYSQL_DATABASE"), "Database name")
 	flag.StringVar(&config.DBPort, "port", os.Getenv("MYSQL_PORT"), "Database port")
 	flag.StringVar(&config.DBHost, "host", os.Getenv("MYSQL_HOST"), "Database host")
+	flag.StringVar(&config.migrate, "migrate", "up", "Specify if we should be migrating DB 'up' or 'down'")
 
 	flag.Parse()
 
@@ -43,4 +45,8 @@ func (c *Configurations) getDBConnStr(dbhost, dbname string) string {
 		c.DBPassword,
 		c.DBName,
 	)
+}
+
+func (c *Configurations) GetMigration() string {
+	return c.migrate
 }

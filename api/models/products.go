@@ -17,7 +17,7 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 
 	stmt := `
 		SELECT Id, Code, Name
-		FROM Produtos
+		FROM Products
 	`
 
 	rows, err := app.DB.Client.Query(stmt)
