@@ -1,0 +1,53 @@
+version: "3.7"
+
+networks:
+  erpnetwork:
+    driver: bridge
+
+volumes:
+  erpvolume:
+    name: erp-volume
+
+services:
+  mysqlsrv:
+    image: mysql
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - erpvolume:/var/lib/mysql
+    networks:
+      - erpnetwork
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - erpnetwork
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        API_PORT: ${API_PORT}
+    depends_on:
+      - mysqlsrv
+    volumes:
+      - ./:/app
+    ports:
+      - 5000:5000
+    networks:
+      - erpnetwork
+    env_file:
+      - .env
+    entrypoint: ["/bin/bash", "./scripts/entrypoint.dev.sh"]
