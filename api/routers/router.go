@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/brbnk/core/api/handlers/helloworld"
+	"github.com/brbnk/core/api/controllers/products"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/julienschmidt/httprouter"
 )
@@ -9,7 +9,7 @@ import (
 func Get(app *application.Application) *httprouter.Router {
 	mux := httprouter.New()
 
-	mux.GET("/", helloworld.Do(app))
+	mux.GET("/products", products.GetAll(app))
 
 	return mux
 }
