@@ -40,7 +40,7 @@ func (c *Configurations) GetDBConnStr() string {
 
 func (c *Configurations) getDBConnStr(dbhost, dbname string) string {
 	return fmt.Sprintf(
-		"%s:%s@tcp(mysqlsrv)/%s",
+		"%s:%s@tcp(mysqlsrv)/%s?parseTime=true",
 		c.DBUser,
 		c.DBPassword,
 		c.DBName,
