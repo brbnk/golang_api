@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-	"log"
 	"time"
 
 	"github.com/brbnk/core/cfg/application"
@@ -22,30 +20,39 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 	products := make([]*Products, 0)
 
 	stmt := `
-		SELECT Id, Code, Name, IsActive, IsDeleted, CreateDate, LastUpdate
-		FROM Products
-		ORDER BY Code
+		SELECT
+			p.Id, p.Code, p.Name, p.IsActive,
+			p.IsDeleted, p.CreateDate, p.LastUpdate
+		FROM Products p
+		ORDER BY p.Code;
 	`
 
 	rows, err := app.DB.Client.Query(stmt)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer rows.Close()
 	for rows.Next() {
 		product := new(Products)
 
-		if err := rows.Scan(&product.Id, &product.Code, &product.Name,
-			&product.IsActive, &product.IsDeleted, &product.CreateDate, &product.LastUpdate); err != nil {
-			log.Fatal(err)
+		if err := rows.Scan(
+			&product.Id,
+			&product.Code,
+			&product.Name,
+			&product.IsActive,
+			&product.IsDeleted,
+			&product.CreateDate,
+			&product.LastUpdate,
+		); err != nil {
+			return nil, err
 		}
 
 		products = append(products, product)
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return products, nil
@@ -54,9 +61,9 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 func (p *Products) GetProductById(app *application.Application) (*Products, error) {
 	stmt := `
 		SELECT
-			Id, Code, IsActive, IsDeleted, Name,
-			CreateDate, LastUpdate
-		FROM Products
+			p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
+			p.CreateDate, p.LastUpdate
+		FROM Products p
 		WHERE Id = ?
 	`
 
@@ -65,7 +72,7 @@ func (p *Products) GetProductById(app *application.Application) (*Products, erro
 		Scan(&p.Id, &p.Code, &p.IsActive, &p.IsDeleted, &p.Name, &p.CreateDate, &p.LastUpdate)
 
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	return p, nil
@@ -77,20 +84,13 @@ func (p *Products) CreateProduct(app *application.Application) error {
 		VALUES (?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	res, err := stmt.Exec(p.Code, p.Name, p.IsActive, p.IsDeleted, p.CreateDate, p.LastUpdate)
+	_, err = stmt.Exec(p.Code, p.Name, p.IsActive, p.IsDeleted, p.CreateDate, p.LastUpdate)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(rows)
 
 	return nil
 }
@@ -108,12 +108,12 @@ func (p *Products) UpdateProduct(app *application.Application) error {
 	`)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = stmt.Exec(p.Code, p.Name, p.IsActive, p.IsDeleted, p.LastUpdate, p.Id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
@@ -124,17 +124,18 @@ func (p *Products) DeleteProduct(app *application.Application) error {
 		UPDATE Products
 		SET
 			IsDeleted = 1,
-			IsActive = 0
+			IsActive = 0,
+			LastUpdate = ?
 		WHERE Id = ?
 	`)
 
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
-	_, err = stmt.Exec(p.Id)
+	_, err = stmt.Exec(p.LastUpdate, p.Id)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	return nil
