@@ -23,18 +23,15 @@ func GetAll(app *application.Application) httprouter.Handle {
 
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				response.SetStatus(http.StatusOK).SetMessage("Empty List")
-				response.Write(w, r)
+				response.SetMessage("Empty List").Ok(w, r)
 				return
 			}
 
-			response.SetStatus(http.StatusPreconditionFailed).SetMessage("Internal Server Error").SetSuccess(false)
-			response.Write(w, r)
+			response.InternalServerError(w, r)
 			return
 		}
 
-		response.SetStatus(http.StatusOK).SetResult(products)
-		response.Write(w, r)
+		response.SetResult(products).Ok(w, r)
 	})
 }
 
@@ -46,8 +43,7 @@ func Get(app *application.Application) httprouter.Handle {
 
 		id, err := parser.ParseId(p.ByName("id"))
 		if err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("Invalid Paramater 'id'").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("Invalid Paramater 'id'").BadRequest(w, r)
 			return
 		}
 
@@ -55,13 +51,11 @@ func Get(app *application.Application) httprouter.Handle {
 
 		product, err := products.GetProductById(app, model)
 		if err != nil {
-			response.SetStatus(http.StatusNotFound).SetMessage("This product doesn't exist!").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("This product doesn't exist!").NotFound(w, r)
 			return
 		}
 
-		response.SetStatus(http.StatusOK).SetResult(product)
-		response.Write(w, r)
+		response.SetResult(product).Ok(w, r)
 	})
 }
 
@@ -73,22 +67,16 @@ func Create(app *application.Application) httprouter.Handle {
 		response := httpresponse.New()
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("Invalid payload!").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
 		if err := products.InsertProducts(app, &product); err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("The given product already exists!").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("The given product already exists!").BadRequest(w, r)
 			return
 		}
 
-		response.
-			SetStatus(http.StatusOK).
-			SetMessage("Product created with success!").
-			SetResult(product).
-			Write(w, r)
+		response.SetResult(product).SetMessage("Product created with success").Ok(w, r)
 	})
 }
 
@@ -100,30 +88,23 @@ func Update(app *application.Application) httprouter.Handle {
 
 		id, err := parser.ParseId(p.ByName("id"))
 		if err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("Invalid Paramater 'id'").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("Invalid paramater 'id'").BadRequest(w, r)
 			return
 		}
 
 		product := models.Products{Id: uint(id)}
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("Invalid payload!").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
 		if err := products.UpdateProduct(app, &product); err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("It was not possible to update product").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("It was not possible to update product").BadRequest(w, r)
 			return
 		}
 
-		response.
-			SetStatus(http.StatusOK).
-			SetMessage("Product updated with success").
-			SetResult(product).
-			Write(w, r)
+		response.SetResult(product).SetMessage("Product updated with success").Ok(w, r)
 	}
 }
 
@@ -135,22 +116,16 @@ func Delete(app *application.Application) httprouter.Handle {
 
 		id, err := parser.ParseId(p.ByName("id"))
 		if err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("Invalid Paramater 'id'").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
 		product := &models.Products{Id: uint(id)}
 		if err := products.DeleteProduct(app, product); err != nil {
-			response.SetStatus(http.StatusBadRequest).SetMessage("It was not possible to delete product").SetSuccess(false)
-			response.Write(w, r)
+			response.SetMessage("It was not possible to delete product").BadRequest(w, r)
 			return
 		}
 
-		response.
-			SetStatus(http.StatusOK).
-			SetMessage("Product deleted with success").
-			SetResult(product).
-			Write(w, r)
+		response.SetResult(product).SetMessage("Product deleted with success").Ok(w, r)
 	}
 }

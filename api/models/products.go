@@ -20,12 +20,12 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 	products := make([]*Products, 0)
 
 	stmt := `
-		SELECT
-			p.Id, p.Code, p.Name, p.IsActive,
-			p.IsDeleted, p.CreateDate, p.LastUpdate
-		FROM Products p
-		ORDER BY p.Code;
-	`
+    SELECT
+      p.Id, p.Code, p.Name, p.IsActive,
+      p.IsDeleted, p.CreateDate, p.LastUpdate
+    FROM Products p
+    ORDER BY p.Code;
+  `
 
 	rows, err := app.DB.Client.Query(stmt)
 	if err != nil {
@@ -60,16 +60,24 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 
 func (p *Products) GetProductById(app *application.Application) (*Products, error) {
 	stmt := `
-		SELECT
-			p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
-			p.CreateDate, p.LastUpdate
-		FROM Products p
-		WHERE Id = ?
-	`
+    SELECT
+      p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
+      p.CreateDate, p.LastUpdate
+    FROM Products p
+    WHERE Id = ?
+  `
 
 	err := app.DB.Client.
 		QueryRow(stmt, p.Id).
-		Scan(&p.Id, &p.Code, &p.IsActive, &p.IsDeleted, &p.Name, &p.CreateDate, &p.LastUpdate)
+		Scan(
+			&p.Id,
+			&p.Code,
+			&p.IsActive,
+			&p.IsDeleted,
+			&p.Name,
+			&p.CreateDate,
+			&p.LastUpdate,
+		)
 
 	if err != nil {
 		return nil, err
@@ -80,8 +88,9 @@ func (p *Products) GetProductById(app *application.Application) (*Products, erro
 
 func (p *Products) CreateProduct(app *application.Application) error {
 	stmt, err := app.DB.Client.Prepare(`
-		INSERT INTO Products (code, name, isactive, isdeleted, createdate, lastupdate)
-		VALUES (?, ?, ?, ?, ?, ?)`)
+    INSERT INTO
+			Products (code, name, isactive, isdeleted, createdate, lastupdate)
+    VALUES (?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return err
@@ -98,14 +107,14 @@ func (p *Products) CreateProduct(app *application.Application) error {
 func (p *Products) UpdateProduct(app *application.Application) error {
 	stmt, err := app.DB.Client.Prepare(`
     UPDATE Products
-		SET
-		  Code = ?,
-			Name = ?,
-			IsActive = ?,
-			IsDeleted = ?,
-			LastUpdate = ?
-		WHERE Id = ?
-	`)
+    SET
+      Code = ?,
+      Name = ?,
+      IsActive = ?,
+      IsDeleted = ?,
+      LastUpdate = ?
+    WHERE Id = ?
+  `)
 
 	if err != nil {
 		return err
@@ -121,13 +130,13 @@ func (p *Products) UpdateProduct(app *application.Application) error {
 
 func (p *Products) DeleteProduct(app *application.Application) error {
 	stmt, err := app.DB.Client.Prepare(`
-		UPDATE Products
-		SET
-			IsDeleted = 1,
-			IsActive = 0,
-			LastUpdate = ?
-		WHERE Id = ?
-	`)
+    UPDATE Products
+    SET
+      IsDeleted = 1,
+      IsActive = 0,
+      LastUpdate = ?
+    WHERE Id = ?
+  `)
 
 	if err != nil {
 		return err
