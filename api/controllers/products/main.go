@@ -7,19 +7,29 @@ import (
 
 	middleware "github.com/brbnk/core/api/middlewares"
 	"github.com/brbnk/core/api/models"
-	"github.com/brbnk/core/api/services/products"
+	"github.com/brbnk/core/api/services"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/brbnk/core/pkg/http/parser"
 	httpresponse "github.com/brbnk/core/pkg/http/response"
 	"github.com/julienschmidt/httprouter"
 )
 
-func GetAll(app *application.Application) httprouter.Handle {
+type ProductController struct {
+	service services.ProductServiceInterface
+}
+
+func NewController(ctx *application.DbContext) *ProductController {
+	return &ProductController{
+		service: services.NewProductService(ctx),
+	}
+}
+
+func (c *ProductController) GetAll() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
 		response := httpresponse.New()
-		products, err := products.GetAllProducts(app)
+		products, err := c.service.GetAllProducts()
 
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -35,7 +45,7 @@ func GetAll(app *application.Application) httprouter.Handle {
 	})
 }
 
-func Get(app *application.Application) httprouter.Handle {
+func (c *ProductController) Get() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -47,9 +57,9 @@ func Get(app *application.Application) httprouter.Handle {
 			return
 		}
 
-		model := &models.Products{Id: uint(id)}
+		model := &models.Product{Id: uint(id)}
 
-		product, err := products.GetProductById(app, model)
+		product, err := c.service.GetProductById(model)
 		if err != nil {
 			response.SetMessage("This product doesn't exist!").NotFound(w, r)
 			return
@@ -59,11 +69,11 @@ func Get(app *application.Application) httprouter.Handle {
 	})
 }
 
-func Create(app *application.Application) httprouter.Handle {
+func (c *ProductController) Create() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
-		product := models.Products{}
+		product := models.Product{}
 		response := httpresponse.New()
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
@@ -71,7 +81,7 @@ func Create(app *application.Application) httprouter.Handle {
 			return
 		}
 
-		if err := products.InsertProducts(app, &product); err != nil {
+		if err := c.service.InsertProducts(&product); err != nil {
 			response.SetMessage("The given product already exists!").BadRequest(w, r)
 			return
 		}
@@ -80,7 +90,7 @@ func Create(app *application.Application) httprouter.Handle {
 	})
 }
 
-func Update(app *application.Application) httprouter.Handle {
+func (c *ProductController) Update() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -92,14 +102,14 @@ func Update(app *application.Application) httprouter.Handle {
 			return
 		}
 
-		product := models.Products{Id: uint(id)}
+		product := models.Product{Id: uint(id)}
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
-		if err := products.UpdateProduct(app, &product); err != nil {
+		if err := c.service.UpdateProduct(&product); err != nil {
 			response.SetMessage("It was not possible to update product").BadRequest(w, r)
 			return
 		}
@@ -108,7 +118,7 @@ func Update(app *application.Application) httprouter.Handle {
 	}
 }
 
-func Delete(app *application.Application) httprouter.Handle {
+func (c *ProductController) Delete() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -120,8 +130,8 @@ func Delete(app *application.Application) httprouter.Handle {
 			return
 		}
 
-		product := &models.Products{Id: uint(id)}
-		if err := products.DeleteProduct(app, product); err != nil {
+		product := &models.Product{Id: uint(id)}
+		if err := c.service.DeleteProduct(product); err != nil {
 			response.SetMessage("It was not possible to delete product").BadRequest(w, r)
 			return
 		}

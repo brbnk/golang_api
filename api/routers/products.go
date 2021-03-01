@@ -7,9 +7,11 @@ import (
 )
 
 func InitProductRoutes(app *application.Application, h *httprouter.Router) {
-	h.GET("/products", products.GetAll(app))
-	h.POST("/products", products.Create(app))
-	h.GET("/products/:id", products.Get(app))
-	h.PUT("/products/:id", products.Update(app))
-	h.DELETE("/products/:id", products.Delete(app))
+	controller := products.NewController(app.Ctx)
+
+	h.GET("/products", controller.GetAll())
+	h.POST("/products", controller.Create())
+	h.GET("/products/:id", controller.Get())
+	h.PUT("/products/:id", controller.Update())
+	h.DELETE("/products/:id", controller.Delete())
 }

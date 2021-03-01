@@ -1,12 +1,11 @@
 package models
 
 import (
+	"database/sql"
 	"time"
-
-	"github.com/brbnk/core/cfg/application"
 )
 
-type Products struct {
+type Product struct {
 	Id         uint      `json:"id"`
 	Code       string    `json:"code"`
 	Name       string    `json:"name"`
@@ -16,8 +15,20 @@ type Products struct {
 	LastUpdate time.Time `json:"lastupdate"`
 }
 
-func (p *Products) GetProducts(app *application.Application) ([]*Products, error) {
-	products := make([]*Products, 0)
+type ProductModel struct {
+	DB *sql.DB
+}
+
+type ProductRepositoryInterface interface {
+	GetProducts() ([]*Product, error)
+	GetProductById(p *Product) (*Product, error)
+	CreateProduct(p *Product) error
+	UpdateProduct(p *Product) error
+	DeleteProduct(p *Product) error
+}
+
+func (m *ProductModel) GetProducts() ([]*Product, error) {
+	products := make([]*Product, 0)
 
 	stmt := `
     SELECT
@@ -27,14 +38,14 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
     ORDER BY p.Code;
   `
 
-	rows, err := app.DB.Client.Query(stmt)
+	rows, err := m.DB.Query(stmt)
 	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 	for rows.Next() {
-		product := new(Products)
+		product := new(Product)
 
 		if err := rows.Scan(
 			&product.Id,
@@ -58,7 +69,7 @@ func (p *Products) GetProducts(app *application.Application) ([]*Products, error
 	return products, nil
 }
 
-func (p *Products) GetProductById(app *application.Application) (*Products, error) {
+func (m *ProductModel) GetProductById(p *Product) (*Product, error) {
 	stmt := `
     SELECT
       p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
@@ -67,7 +78,7 @@ func (p *Products) GetProductById(app *application.Application) (*Products, erro
     WHERE Id = ?
   `
 
-	err := app.DB.Client.
+	err := m.DB.
 		QueryRow(stmt, p.Id).
 		Scan(
 			&p.Id,
@@ -86,8 +97,8 @@ func (p *Products) GetProductById(app *application.Application) (*Products, erro
 	return p, nil
 }
 
-func (p *Products) CreateProduct(app *application.Application) error {
-	stmt, err := app.DB.Client.Prepare(`
+func (m *ProductModel) CreateProduct(p *Product) error {
+	stmt, err := m.DB.Prepare(`
     INSERT INTO
 			Products (code, name, isactive, isdeleted, createdate, lastupdate)
     VALUES (?, ?, ?, ?, ?, ?)`)
@@ -104,8 +115,8 @@ func (p *Products) CreateProduct(app *application.Application) error {
 	return nil
 }
 
-func (p *Products) UpdateProduct(app *application.Application) error {
-	stmt, err := app.DB.Client.Prepare(`
+func (m *ProductModel) UpdateProduct(p *Product) error {
+	stmt, err := m.DB.Prepare(`
     UPDATE Products
     SET
       Code = ?,
@@ -128,8 +139,8 @@ func (p *Products) UpdateProduct(app *application.Application) error {
 	return nil
 }
 
-func (p *Products) DeleteProduct(app *application.Application) error {
-	stmt, err := app.DB.Client.Prepare(`
+func (m *ProductModel) DeleteProduct(p *Product) error {
+	stmt, err := m.DB.Prepare(`
     UPDATE Products
     SET
       IsDeleted = 1,
