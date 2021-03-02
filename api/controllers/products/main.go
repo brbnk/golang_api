@@ -18,10 +18,20 @@ type ProductController struct {
 	service services.ProductServiceInterface
 }
 
-func NewController(ctx *application.DbContext) *ProductController {
+func newController(ctx *application.DbContext) *ProductController {
 	return &ProductController{
-		service: services.NewProductService(ctx),
+		service: services.NewProductService(ctx.Product),
 	}
+}
+
+func InitController(app *application.Application, h *httprouter.Router) {
+	controller := newController(app.Ctx)
+
+	h.GET("/products", controller.GetAll())
+	h.POST("/products", controller.Create())
+	h.GET("/products/:id", controller.Get())
+	h.PUT("/products/:id", controller.Update())
+	h.DELETE("/products/:id", controller.Delete())
 }
 
 func (c *ProductController) GetAll() httprouter.Handle {

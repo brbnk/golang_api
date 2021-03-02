@@ -27,7 +27,7 @@ type ProductRepositoryInterface interface {
 	DeleteProduct(p *Product) error
 }
 
-func (m *ProductModel) GetProducts() ([]*Product, error) {
+func (m ProductModel) GetProducts() ([]*Product, error) {
 	products := make([]*Product, 0)
 
 	stmt := `
@@ -69,7 +69,7 @@ func (m *ProductModel) GetProducts() ([]*Product, error) {
 	return products, nil
 }
 
-func (m *ProductModel) GetProductById(p *Product) (*Product, error) {
+func (m ProductModel) GetProductById(p *Product) (*Product, error) {
 	stmt := `
     SELECT
       p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
@@ -97,7 +97,7 @@ func (m *ProductModel) GetProductById(p *Product) (*Product, error) {
 	return p, nil
 }
 
-func (m *ProductModel) CreateProduct(p *Product) error {
+func (m ProductModel) CreateProduct(p *Product) error {
 	stmt, err := m.DB.Prepare(`
     INSERT INTO
 			Products (code, name, isactive, isdeleted, createdate, lastupdate)
@@ -115,7 +115,7 @@ func (m *ProductModel) CreateProduct(p *Product) error {
 	return nil
 }
 
-func (m *ProductModel) UpdateProduct(p *Product) error {
+func (m ProductModel) UpdateProduct(p *Product) error {
 	stmt, err := m.DB.Prepare(`
     UPDATE Products
     SET
@@ -139,7 +139,7 @@ func (m *ProductModel) UpdateProduct(p *Product) error {
 	return nil
 }
 
-func (m *ProductModel) DeleteProduct(p *Product) error {
+func (m ProductModel) DeleteProduct(p *Product) error {
 	stmt, err := m.DB.Prepare(`
     UPDATE Products
     SET

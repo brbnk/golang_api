@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"github.com/brbnk/core/api/controllers/products"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/julienschmidt/httprouter"
 )
@@ -8,7 +9,7 @@ import (
 func Get(app *application.Application) *httprouter.Router {
 	mux := httprouter.New()
 
-	InitProductRoutes(app, mux)
+	products.InitController(app, mux)
 
 	return mux
 }

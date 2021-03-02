@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/brbnk/core/api/models"
-	"github.com/brbnk/core/cfg/application"
 )
 
 type ProductService struct {
@@ -19,9 +18,9 @@ type ProductServiceInterface interface {
 	DeleteProduct(p *models.Product) error
 }
 
-func NewProductService(ctx *application.DbContext) *ProductService {
+func NewProductService(ctx models.ProductRepositoryInterface) *ProductService {
 	return &ProductService{
-		repository: &ctx.Product,
+		repository: ctx,
 	}
 }
 
