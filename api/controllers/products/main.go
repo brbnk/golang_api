@@ -20,7 +20,7 @@ type ProductController struct {
 
 func newController(ctx *application.DbContext) *ProductController {
 	return &ProductController{
-		service: services.NewProductService(ctx.Product),
+		service: services.NewService(ctx.Product),
 	}
 }
 

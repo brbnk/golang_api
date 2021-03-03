@@ -27,6 +27,10 @@ type ProductRepositoryInterface interface {
 	DeleteProduct(p *Product) error
 }
 
+func NewProductRepository(db *sql.DB) ProductRepositoryInterface {
+	return &ProductModel{DB: db}
+}
+
 func (m ProductModel) GetProducts() ([]*Product, error) {
 	products := make([]*Product, 0)
 
@@ -83,9 +87,9 @@ func (m ProductModel) GetProductById(p *Product) (*Product, error) {
 		Scan(
 			&p.Id,
 			&p.Code,
+			&p.Name,
 			&p.IsActive,
 			&p.IsDeleted,
-			&p.Name,
 			&p.CreateDate,
 			&p.LastUpdate,
 		)

@@ -18,7 +18,7 @@ type ProductServiceInterface interface {
 	DeleteProduct(p *models.Product) error
 }
 
-func NewProductService(ctx models.ProductRepositoryInterface) *ProductService {
+func NewService(ctx models.ProductRepositoryInterface) *ProductService {
 	return &ProductService{
 		repository: ctx,
 	}
