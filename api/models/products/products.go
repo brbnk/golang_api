@@ -1,4 +1,4 @@
-package models
+package products
 
 import (
 	"database/sql"
@@ -34,13 +34,7 @@ func NewProductRepository(db *sql.DB) ProductRepositoryInterface {
 func (m ProductModel) GetProducts() ([]*Product, error) {
 	products := make([]*Product, 0)
 
-	stmt := `
-    SELECT
-      p.Id, p.Code, p.Name, p.IsActive,
-      p.IsDeleted, p.CreateDate, p.LastUpdate
-    FROM Products p
-    ORDER BY p.Code;
-  `
+	stmt := GETALL
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
@@ -74,13 +68,7 @@ func (m ProductModel) GetProducts() ([]*Product, error) {
 }
 
 func (m ProductModel) GetProductById(p *Product) (*Product, error) {
-	stmt := `
-    SELECT
-      p.Id, p.Code, p.IsActive, p.IsDeleted, p.Name,
-      p.CreateDate, p.LastUpdate
-    FROM Products p
-    WHERE Id = ?
-  `
+	stmt := GET
 
 	err := m.DB.
 		QueryRow(stmt, p.Id).
@@ -102,10 +90,7 @@ func (m ProductModel) GetProductById(p *Product) (*Product, error) {
 }
 
 func (m ProductModel) CreateProduct(p *Product) error {
-	stmt, err := m.DB.Prepare(`
-    INSERT INTO
-			Products (code, name, isactive, isdeleted, createdate, lastupdate)
-    VALUES (?, ?, ?, ?, ?, ?)`)
+	stmt, err := m.DB.Prepare(CREATE)
 
 	if err != nil {
 		return err
@@ -120,16 +105,7 @@ func (m ProductModel) CreateProduct(p *Product) error {
 }
 
 func (m ProductModel) UpdateProduct(p *Product) error {
-	stmt, err := m.DB.Prepare(`
-    UPDATE Products
-    SET
-      Code = ?,
-      Name = ?,
-      IsActive = ?,
-      IsDeleted = ?,
-      LastUpdate = ?
-    WHERE Id = ?
-  `)
+	stmt, err := m.DB.Prepare(UPDATE)
 
 	if err != nil {
 		return err
@@ -144,14 +120,7 @@ func (m ProductModel) UpdateProduct(p *Product) error {
 }
 
 func (m ProductModel) DeleteProduct(p *Product) error {
-	stmt, err := m.DB.Prepare(`
-    UPDATE Products
-    SET
-      IsDeleted = 1,
-      IsActive = 0,
-      LastUpdate = ?
-    WHERE Id = ?
-  `)
+	stmt, err := m.DB.Prepare(DELETE)
 
 	if err != nil {
 		return err

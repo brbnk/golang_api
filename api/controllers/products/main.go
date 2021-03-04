@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	middleware "github.com/brbnk/core/api/middlewares"
-	"github.com/brbnk/core/api/models"
+	"github.com/brbnk/core/api/models/products"
 	"github.com/brbnk/core/api/services"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/brbnk/core/pkg/http/parser"
@@ -47,7 +47,7 @@ func (c *ProductController) GetAll() httprouter.Handle {
 				return
 			}
 
-			response.InternalServerError(w, r)
+			response.SetMessage(err.Error()).InternalServerError(w, r)
 			return
 		}
 
@@ -67,11 +67,11 @@ func (c *ProductController) Get() httprouter.Handle {
 			return
 		}
 
-		model := &models.Product{Id: uint(id)}
+		model := &products.Product{Id: uint(id)}
 
 		product, err := c.service.GetProductById(model)
 		if err != nil {
-			response.SetMessage("This product doesn't exist!").NotFound(w, r)
+			response.SetMessage(err.Error()).NotFound(w, r)
 			return
 		}
 
@@ -83,7 +83,7 @@ func (c *ProductController) Create() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
-		product := models.Product{}
+		product := products.Product{}
 		response := httpresponse.New()
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
@@ -92,7 +92,7 @@ func (c *ProductController) Create() httprouter.Handle {
 		}
 
 		if err := c.service.InsertProducts(&product); err != nil {
-			response.SetMessage("The given product already exists!").BadRequest(w, r)
+			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
@@ -112,7 +112,7 @@ func (c *ProductController) Update() httprouter.Handle {
 			return
 		}
 
-		product := models.Product{Id: uint(id)}
+		product := products.Product{Id: uint(id)}
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
@@ -120,7 +120,7 @@ func (c *ProductController) Update() httprouter.Handle {
 		}
 
 		if err := c.service.UpdateProduct(&product); err != nil {
-			response.SetMessage("It was not possible to update product").BadRequest(w, r)
+			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
@@ -140,9 +140,9 @@ func (c *ProductController) Delete() httprouter.Handle {
 			return
 		}
 
-		product := &models.Product{Id: uint(id)}
+		product := &products.Product{Id: uint(id)}
 		if err := c.service.DeleteProduct(product); err != nil {
-			response.SetMessage("It was not possible to delete product").BadRequest(w, r)
+			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 

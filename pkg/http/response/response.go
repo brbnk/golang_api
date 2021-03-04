@@ -43,7 +43,6 @@ func (h *HttpResponse) SetResult(r interface{}) *HttpResponse {
 // Writers
 func (h *HttpResponse) InternalServerError(w http.ResponseWriter, r *http.Request) {
 	h.SetStatus(http.StatusInternalServerError).
-		SetMessage("Internal Server Error").
 		SetSuccess(false).
 		write(w, r)
 }

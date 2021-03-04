@@ -1,13 +1,13 @@
 package application
 
 import (
-	"github.com/brbnk/core/api/models"
+	"github.com/brbnk/core/api/models/products"
 	"github.com/brbnk/core/cfg/db"
 	"github.com/brbnk/core/cfg/environment"
 )
 
 type DbContext struct {
-	Product models.ProductModel
+	Product products.ProductModel
 }
 
 type Application struct {
@@ -20,7 +20,7 @@ func Get() (*Application, error) {
 	db, err := db.Get(cfg.GetDBConnStr())
 
 	ctx := &DbContext{
-		Product: models.ProductModel{DB: db.Client},
+		Product: products.ProductModel{DB: db.Client},
 	}
 
 	if err != nil {
