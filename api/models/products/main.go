@@ -3,17 +3,14 @@ package products
 import (
 	"time"
 
+	b "github.com/brbnk/core/api/models/base"
 	"github.com/jmoiron/sqlx"
 )
 
 type Product struct {
-	Id         uint      `json:"id" db:"Id"`
-	Code       string    `json:"code" db:"Code"`
-	Name       string    `json:"name" db:"Name"`
-	IsActive   bool      `json:"isactive" db:"IsActive"`
-	IsDeleted  bool      `json:"isdeleted" db:"IsDeleted"`
-	CreateDate time.Time `json:"createdate" db:"CreateDate"`
-	LastUpdate time.Time `json:"lastupdate" db:"LastUpdate"`
+	b.Base
+	Code string `json:"code" db:"Code"`
+	Name string `json:"name" db:"Name"`
 }
 
 type ProductModel struct {
@@ -22,10 +19,10 @@ type ProductModel struct {
 
 type ProductRepositoryInterface interface {
 	GetProducts() ([]*Product, error)
-	GetProductById(p *Product) (*Product, error)
-	CreateProduct(p *Product) error
-	UpdateProduct(p *Product) error
-	DeleteProduct(p *Product) error
+	GetProductById(uint) (*Product, error)
+	CreateProduct(*Product) error
+	UpdateProduct(*Product) error
+	DeleteProduct(uint, time.Time) error
 }
 
 func NewProductRepository(db *sqlx.DB) ProductRepositoryInterface {
@@ -60,11 +57,13 @@ func (m ProductModel) GetProducts() ([]*Product, error) {
 	return products, nil
 }
 
-func (m ProductModel) GetProductById(p *Product) (*Product, error) {
+func (m ProductModel) GetProductById(id uint) (*Product, error) {
 	stmt := GET
 
+	p := &Product{}
+
 	err := m.DB.
-		QueryRowx(stmt, p.Id).
+		QueryRowx(stmt, id).
 		StructScan(p)
 
 	if err != nil {
@@ -104,14 +103,14 @@ func (m ProductModel) UpdateProduct(p *Product) error {
 	return nil
 }
 
-func (m ProductModel) DeleteProduct(p *Product) error {
+func (m ProductModel) DeleteProduct(id uint, t time.Time) error {
 	stmt, err := m.DB.Prepare(DELETE)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(p.LastUpdate, p.Id)
+	_, err = stmt.Exec(t, id)
 	if err != nil {
 		return err
 	}

@@ -3,18 +3,15 @@ package skus
 import (
 	"time"
 
+	b "github.com/brbnk/core/api/models/base"
 	"github.com/jmoiron/sqlx"
 )
 
 type Sku struct {
-	Id         uint      `json:"id" db:"Id"`
-	Code       string    `json:"code" db:"Code"`
-	Name       string    `json:"name" db:"Name"`
-	ProductId  uint      `json:"productid" db:"ProductId"`
-	IsActive   bool      `json:"isactive" db:"IsActive"`
-	IsDeleted  bool      `json:"isdeleted" db:"IsDeleted"`
-	CreateDate time.Time `json:"createdate" db:"CreateDate"`
-	LastUpdate time.Time `json:"lastupdate" db:"LastUpdate"`
+	b.Base
+	Code      string `json:"code" db:"Code"`
+	Name      string `json:"name" db:"Name"`
+	ProductId uint   `json:"productid" db:"ProductId"`
 }
 
 type SkuModel struct {
@@ -23,10 +20,10 @@ type SkuModel struct {
 
 type SkuRepositoryInterface interface {
 	GetSkus() ([]*Sku, error)
-	GetSkuById(p *Sku) (*Sku, error)
-	CreateSku(p *Sku) error
-	UpdateSku(p *Sku) error
-	DeleteSku(p *Sku) error
+	GetSkuById(uint) (*Sku, error)
+	CreateSku(*Sku) error
+	UpdateSku(*Sku) error
+	DeleteSku(uint, time.Time) error
 }
 
 func NewSkuRepository(db *sqlx.DB) SkuRepositoryInterface {
@@ -61,11 +58,12 @@ func (m SkuModel) GetSkus() ([]*Sku, error) {
 	return skus, nil
 }
 
-func (m SkuModel) GetSkuById(s *Sku) (*Sku, error) {
+func (m SkuModel) GetSkuById(id uint) (*Sku, error) {
 	stmt := GET
 
+	s := &Sku{}
 	err := m.DB.
-		QueryRowx(stmt, s.Id).
+		QueryRowx(stmt, id).
 		StructScan(s)
 
 	if err != nil {
@@ -105,14 +103,14 @@ func (m SkuModel) UpdateSku(s *Sku) error {
 	return nil
 }
 
-func (m SkuModel) DeleteSku(s *Sku) error {
+func (m SkuModel) DeleteSku(id uint, t time.Time) error {
 	stmt, err := m.DB.Prepare(DELETE)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(s.LastUpdate, s.Id)
+	_, err = stmt.Exec(t, id)
 	if err != nil {
 		return err
 	}

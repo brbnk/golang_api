@@ -12,10 +12,10 @@ type SkuService struct {
 
 type SkuServiceInterface interface {
 	GetAllSkus() ([]*skus.Sku, error)
-	GetSkuById(p *skus.Sku) (*skus.Sku, error)
-	InsertSku(p *skus.Sku) error
-	UpdateSku(p *skus.Sku) error
-	DeleteSku(p *skus.Sku) error
+	GetSkuById(uint) (*skus.Sku, error)
+	InsertSku(*skus.Sku) error
+	UpdateSku(*skus.Sku) error
+	DeleteSku(uint) error
 }
 
 func NewService(ctx skus.SkuRepositoryInterface) *SkuService {
@@ -33,8 +33,8 @@ func (s *SkuService) GetAllSkus() ([]*skus.Sku, error) {
 	return skus, nil
 }
 
-func (s *SkuService) GetSkuById(p *skus.Sku) (*skus.Sku, error) {
-	product, err := s.repository.GetSkuById(p)
+func (s *SkuService) GetSkuById(id uint) (*skus.Sku, error) {
+	product, err := s.repository.GetSkuById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -62,10 +62,10 @@ func (s *SkuService) UpdateSku(p *skus.Sku) error {
 	return nil
 }
 
-func (s *SkuService) DeleteSku(p *skus.Sku) error {
-	p.LastUpdate = time.Now()
+func (s *SkuService) DeleteSku(id uint) error {
+	time := time.Now()
 
-	if err := s.repository.DeleteSku(p); err != nil {
+	if err := s.repository.DeleteSku(id, time); err != nil {
 		return err
 	}
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	middleware "github.com/brbnk/core/api/middlewares"
+	b "github.com/brbnk/core/api/models/base"
 	"github.com/brbnk/core/api/models/skus"
 	s "github.com/brbnk/core/api/services/skus"
 	"github.com/brbnk/core/cfg/application"
@@ -67,9 +68,7 @@ func (c *SkuController) Get() httprouter.Handle {
 			return
 		}
 
-		model := &skus.Sku{Id: uint(id)}
-
-		sku, err := c.service.GetSkuById(model)
+		sku, err := c.service.GetSkuById(uint(id))
 		if err != nil {
 			response.SetMessage(err.Error()).NotFound(w, r)
 			return
@@ -112,7 +111,7 @@ func (c *SkuController) Update() httprouter.Handle {
 			return
 		}
 
-		sku := skus.Sku{Id: uint(id)}
+		sku := skus.Sku{Base: b.Base{Id: uint(id)}}
 
 		if err := parser.ParseBody(r.Body, &sku); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
@@ -140,8 +139,8 @@ func (c *SkuController) Delete() httprouter.Handle {
 			return
 		}
 
-		sku := &skus.Sku{Id: uint(id)}
-		if err := c.service.DeleteSku(sku); err != nil {
+		sku := &skus.Sku{Base: b.Base{Id: uint(id)}}
+		if err := c.service.DeleteSku(uint(id)); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
