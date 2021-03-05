@@ -2,19 +2,15 @@ package products
 
 const (
 	GET = `
-		SELECT
-			p.Id, p.Code, p.Name, p.IsActive, p.IsDeleted,
-			p.CreateDate, p.LastUpdate
-		FROM Products p
+		SELECT *
+		FROM Products
 		WHERE Id = ?
 	`
 
 	GETALL = `
-		SELECT
-			p.Id, p.Code, p.Name, p.IsActive,
-			p.IsDeleted, p.CreateDate, p.LastUpdate
+		SELECT *
 		FROM Products p
-		WHERE IsDeleted = 0
+		WHERE p.IsDeleted = 0
 		ORDER BY p.Code;
 	`
 

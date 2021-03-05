@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jmoiron/sqlx"
 )
 
 type Test struct {
@@ -15,14 +16,15 @@ type Test struct {
 }
 
 func TestGetAllProducts(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
 	defer db.Close()
 
-	repository := NewProductRepository(db)
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	repository := NewProductRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
@@ -83,21 +85,22 @@ func TestGetAllProducts(t *testing.T) {
 }
 
 func TestGetProductById(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
 	defer db.Close()
 
-	repository := NewProductRepository(db)
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	repository := NewProductRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
 		r:  repository,
 		id: 2,
 		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "isactive", "isdeleted", "createdaet", "lastupdate"}).
+			rows := sqlmock.NewRows([]string{"id", "code", "name", "isactive", "isdeleted", "createdate", "lastupdate"}).
 				AddRow(1, "1234", "Produto Teste 1", true, false, time, time).
 				AddRow(2, "4567", "Produto Teste 2", true, false, time, time)
 
@@ -138,7 +141,8 @@ func TestCreateProduct(t *testing.T) {
 
 	defer db.Close()
 
-	repository := NewProductRepository(db)
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	repository := NewProductRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
@@ -180,7 +184,8 @@ func TestUpdateProduct(t *testing.T) {
 
 	defer db.Close()
 
-	repository := NewProductRepository(db)
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	repository := NewProductRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
@@ -223,7 +228,8 @@ func TestDeleteProduct(t *testing.T) {
 
 	defer db.Close()
 
-	repository := NewProductRepository(db)
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	repository := NewProductRepository(sqlxDB)
 
 	time := time.Now()
 
