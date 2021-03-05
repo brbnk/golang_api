@@ -33,6 +33,8 @@ func InitController(app *application.Application, h *httprouter.Router) {
 	h.GET("/products/:id", controller.Get())
 	h.PUT("/products/:id", controller.Update())
 	h.DELETE("/products/:id", controller.Delete())
+
+	h.GET("/products/:id/skus", controller.GetSkuByProductId())
 }
 
 func (c *ProductController) GetAll() httprouter.Handle {
@@ -146,4 +148,26 @@ func (c *ProductController) Delete() httprouter.Handle {
 
 		response.SetMessage("Product deleted with success").Ok(w, r)
 	}
+}
+
+func (c *ProductController) GetSkuByProductId() httprouter.Handle {
+	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		defer r.Body.Close()
+
+		response := httpresponse.New()
+
+		id, err := parser.ParseId(p.ByName("id"))
+		if err != nil {
+			response.SetMessage("Invalid Paramater 'id'").BadRequest(w, r)
+			return
+		}
+
+		sku, err := c.service.GetSkuByProductId(uint(id))
+		if err != nil {
+			response.SetMessage(err.Error()).NotFound(w, r)
+			return
+		}
+
+		response.SetResult(sku).Ok(w, r)
+	})
 }
