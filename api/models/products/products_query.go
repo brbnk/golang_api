@@ -30,6 +30,7 @@ const (
 			LastUpdate = ?
 		WHERE Id = ?
 	`
+
 	DELETE = `
 		UPDATE Products
 		SET

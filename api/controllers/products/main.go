@@ -7,7 +7,7 @@ import (
 
 	middleware "github.com/brbnk/core/api/middlewares"
 	"github.com/brbnk/core/api/models/products"
-	"github.com/brbnk/core/api/services"
+	s "github.com/brbnk/core/api/services/products"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/brbnk/core/pkg/http/parser"
 	httpresponse "github.com/brbnk/core/pkg/http/response"
@@ -15,12 +15,12 @@ import (
 )
 
 type ProductController struct {
-	service services.ProductServiceInterface
+	service s.ProductServiceInterface
 }
 
 func newController(ctx *application.DbContext) *ProductController {
 	return &ProductController{
-		service: services.NewService(ctx.Product),
+		service: s.NewService(ctx.Product),
 	}
 }
 

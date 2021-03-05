@@ -7,13 +7,13 @@ import (
 )
 
 type Product struct {
-	Id         uint      `json:"id"`
-	Code       string    `json:"code"`
-	Name       string    `json:"name"`
-	IsActive   bool      `json:"isactive"`
-	IsDeleted  bool      `json:"isdeleted"`
-	CreateDate time.Time `json:"createdate"`
-	LastUpdate time.Time `json:"lastupdate"`
+	Id         uint      `json:"id" db:"Id"`
+	Code       string    `json:"code" db:"Code"`
+	Name       string    `json:"name" db:"Name"`
+	IsActive   bool      `json:"isactive" db:"IsActive"`
+	IsDeleted  bool      `json:"isdeleted" db:"IsDeleted"`
+	CreateDate time.Time `json:"createdate" db:"CreateDate"`
+	LastUpdate time.Time `json:"lastupdate" db:"LastUpdate"`
 }
 
 type ProductModel struct {
