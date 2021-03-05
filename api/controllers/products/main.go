@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	middleware "github.com/brbnk/core/api/middlewares"
+	"github.com/brbnk/core/api/models/base"
 	"github.com/brbnk/core/api/models/products"
 	s "github.com/brbnk/core/api/services/products"
 	"github.com/brbnk/core/cfg/application"
@@ -67,9 +68,7 @@ func (c *ProductController) Get() httprouter.Handle {
 			return
 		}
 
-		model := &products.Product{Id: uint(id)}
-
-		product, err := c.service.GetProductById(model)
+		product, err := c.service.GetProductById(uint(id))
 		if err != nil {
 			response.SetMessage(err.Error()).NotFound(w, r)
 			return
@@ -112,7 +111,7 @@ func (c *ProductController) Update() httprouter.Handle {
 			return
 		}
 
-		product := products.Product{Id: uint(id)}
+		product := products.Product{Base: base.Base{Id: uint(id)}}
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
@@ -140,12 +139,11 @@ func (c *ProductController) Delete() httprouter.Handle {
 			return
 		}
 
-		product := &products.Product{Id: uint(id)}
-		if err := c.service.DeleteProduct(product); err != nil {
+		if err := c.service.DeleteProduct(uint(id)); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
-		response.SetResult(product).SetMessage("Product deleted with success").Ok(w, r)
+		response.SetMessage("Product deleted with success").Ok(w, r)
 	}
 }

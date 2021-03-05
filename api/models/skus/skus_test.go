@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	b "github.com/brbnk/core/api/models/base"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -30,10 +31,10 @@ func TestGetAllSkus(t *testing.T) {
 	test := &Test{
 		r: repository,
 		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "productid", "isactive", "isdeleted", "createdate", "lastupdate"}).
-				AddRow(1, "1234", "SKU Teste 1", 1, true, false, time, time).
-				AddRow(2, "5678", "SKU Teste 2", 1, true, false, time, time).
-				AddRow(3, "1324", "SKU Teste 3", 1, true, false, time, time)
+			rows := sqlmock.NewRows([]string{"Code", "Name", "ProductId", "Id", "IsActive", "IsDeleted", "CreateDate", "LastUpdate"}).
+				AddRow("1234", "SKU Teste 1", 1, 1, true, false, time, time).
+				AddRow("5678", "SKU Teste 2", 1, 2, true, false, time, time).
+				AddRow("1324", "SKU Teste 3", 1, 3, true, false, time, time)
 
 			mock.ExpectQuery(GETALL).WillReturnRows(rows)
 		},
@@ -41,34 +42,40 @@ func TestGetAllSkus(t *testing.T) {
 
 	expect := []Sku{
 		{
-			Id:         1,
-			Code:       "1234",
-			ProductId:  1,
-			Name:       "SKU Teste 1",
-			IsActive:   true,
-			IsDeleted:  false,
-			CreateDate: time,
-			LastUpdate: time,
+			Code:      "1234",
+			ProductId: 1,
+			Name:      "SKU Teste 1",
+			Base: b.Base{
+				Id:         1,
+				IsActive:   true,
+				IsDeleted:  false,
+				CreateDate: time,
+				LastUpdate: time,
+			},
 		},
 		{
-			Id:         2,
-			Code:       "5678",
-			ProductId:  1,
-			Name:       "SKU Teste 2",
-			IsActive:   true,
-			IsDeleted:  false,
-			CreateDate: time,
-			LastUpdate: time,
+			Code:      "5678",
+			ProductId: 1,
+			Name:      "SKU Teste 2",
+			Base: b.Base{
+				Id:         2,
+				IsActive:   true,
+				IsDeleted:  false,
+				CreateDate: time,
+				LastUpdate: time,
+			},
 		},
 		{
-			Id:         3,
-			Code:       "1324",
-			ProductId:  1,
-			Name:       "SKU Teste 3",
-			IsActive:   true,
-			IsDeleted:  false,
-			CreateDate: time,
-			LastUpdate: time,
+			Code:      "1324",
+			ProductId: 1,
+			Name:      "SKU Teste 3",
+			Base: b.Base{
+				Id:         3,
+				IsActive:   true,
+				IsDeleted:  false,
+				CreateDate: time,
+				LastUpdate: time,
+			},
 		},
 	}
 
@@ -103,28 +110,30 @@ func TestGetProductById(t *testing.T) {
 		r:  repository,
 		id: 2,
 		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "productid", "isactive", "isdeleted", "createdate", "lastupdate"}).
-				AddRow(1, "1234", "SKU Teste 1", 1, true, false, time, time).
-				AddRow(2, "4567", "SKU Teste 2", 1, true, false, time, time)
+			rows := sqlmock.NewRows([]string{"Code", "Name", "ProductId", "Id", "IsActive", "IsDeleted", "CreateDate", "LastUpdate"}).
+				AddRow("1234", "SKU Teste 1", 1, 1, true, false, time, time).
+				AddRow("4567", "SKU Teste 2", 1, 2, true, false, time, time)
 
 			mock.ExpectQuery(GET).WithArgs(2).WillReturnRows(rows)
 		},
 	}
 
 	expect := &Sku{
-		Id:         1,
-		Code:       "1234",
-		Name:       "SKU Teste 1",
-		ProductId:  1,
-		IsActive:   true,
-		IsDeleted:  false,
-		CreateDate: time,
-		LastUpdate: time,
+		Code:      "1234",
+		Name:      "SKU Teste 1",
+		ProductId: 1,
+		Base: b.Base{
+			Id:         1,
+			IsActive:   true,
+			IsDeleted:  false,
+			CreateDate: time,
+			LastUpdate: time,
+		},
 	}
 
 	test.mock()
 
-	got, err := test.r.GetSkuById(&Sku{Id: test.id})
+	got, err := test.r.GetSkuById(test.id)
 
 	if err != nil {
 		t.Errorf("GetProductById() error new = %v", err)
@@ -159,13 +168,15 @@ func TestCreateProduct(t *testing.T) {
 	}
 
 	payload := &Sku{
-		Code:       "1234",
-		Name:       "SKU Teste 1",
-		ProductId:  1,
-		IsActive:   true,
-		IsDeleted:  false,
-		CreateDate: time,
-		LastUpdate: time,
+		Code:      "1234",
+		Name:      "SKU Teste 1",
+		ProductId: 1,
+		Base: b.Base{
+			IsActive:   true,
+			IsDeleted:  false,
+			CreateDate: time,
+			LastUpdate: time,
+		},
 	}
 
 	test.mock()
@@ -205,13 +216,15 @@ func TestUpdateProduct(t *testing.T) {
 	test.mock()
 
 	payload := &Sku{
-		Id:         1,
-		Code:       "1234",
-		Name:       "SKU EDITADO 1",
-		IsActive:   true,
-		IsDeleted:  false,
-		CreateDate: time,
-		LastUpdate: time,
+		Code: "1234",
+		Name: "SKU EDITADO 1",
+		Base: b.Base{
+			Id:         1,
+			IsActive:   true,
+			IsDeleted:  false,
+			CreateDate: time,
+			LastUpdate: time,
+		},
 	}
 
 	err = test.r.UpdateSku(payload)
@@ -239,7 +252,8 @@ func TestDeleteProduct(t *testing.T) {
 	time := time.Now()
 
 	test := &Test{
-		r: repository,
+		r:  repository,
+		id: 1,
 		mock: func() {
 			mock.ExpectPrepare(DELETE).ExpectExec().
 				WithArgs(time, 1).
@@ -249,7 +263,7 @@ func TestDeleteProduct(t *testing.T) {
 
 	test.mock()
 
-	err = test.r.DeleteSku(&Sku{Id: 1, LastUpdate: time})
+	err = test.r.DeleteSku(test.id, time)
 	if err != nil {
 		t.Errorf("DeleteProduct() ERROR >> %v", err)
 		return
