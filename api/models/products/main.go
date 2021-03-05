@@ -1,22 +1,23 @@
 package products
 
 import (
-	"database/sql"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Product struct {
-	Id         uint      `json:"id"`
-	Code       string    `json:"code"`
-	Name       string    `json:"name"`
-	IsActive   bool      `json:"isactive"`
-	IsDeleted  bool      `json:"isdeleted"`
-	CreateDate time.Time `json:"createdate"`
-	LastUpdate time.Time `json:"lastupdate"`
+	Id         uint      `json:"id" db:"Id"`
+	Code       string    `json:"code" db:"Code"`
+	Name       string    `json:"name" db:"Name"`
+	IsActive   bool      `json:"isactive" db:"IsActive"`
+	IsDeleted  bool      `json:"isdeleted" db:"IsDeleted"`
+	CreateDate time.Time `json:"createdate" db:"CreateDate"`
+	LastUpdate time.Time `json:"lastupdate" db:"LastUpdate"`
 }
 
 type ProductModel struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 type ProductRepositoryInterface interface {
@@ -27,7 +28,7 @@ type ProductRepositoryInterface interface {
 	DeleteProduct(p *Product) error
 }
 
-func NewProductRepository(db *sql.DB) ProductRepositoryInterface {
+func NewProductRepository(db *sqlx.DB) ProductRepositoryInterface {
 	return &ProductModel{DB: db}
 }
 
@@ -36,7 +37,7 @@ func (m ProductModel) GetProducts() ([]*Product, error) {
 
 	stmt := GETALL
 
-	rows, err := m.DB.Query(stmt)
+	rows, err := m.DB.Queryx(stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -45,15 +46,7 @@ func (m ProductModel) GetProducts() ([]*Product, error) {
 	for rows.Next() {
 		product := new(Product)
 
-		if err := rows.Scan(
-			&product.Id,
-			&product.Code,
-			&product.Name,
-			&product.IsActive,
-			&product.IsDeleted,
-			&product.CreateDate,
-			&product.LastUpdate,
-		); err != nil {
+		if err := rows.StructScan(&product); err != nil {
 			return nil, err
 		}
 
@@ -71,16 +64,8 @@ func (m ProductModel) GetProductById(p *Product) (*Product, error) {
 	stmt := GET
 
 	err := m.DB.
-		QueryRow(stmt, p.Id).
-		Scan(
-			&p.Id,
-			&p.Code,
-			&p.Name,
-			&p.IsActive,
-			&p.IsDeleted,
-			&p.CreateDate,
-			&p.LastUpdate,
-		)
+		QueryRowx(stmt, p.Id).
+		StructScan(p)
 
 	if err != nil {
 		return nil, err

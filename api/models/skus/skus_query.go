@@ -1,27 +1,27 @@
-package products
+package skus
 
 const (
 	GET = `
 		SELECT *
-		FROM Products
+		FROM Skus
 		WHERE Id = ?
 	`
 
 	GETALL = `
 		SELECT *
-		FROM Products p
-		WHERE p.IsDeleted = 0
-		ORDER BY p.Code;
+		FROM Skus s
+		WHERE s.IsDeleted = 0
+		ORDER BY s.Code;
 	`
 
 	CREATE = `
 		INSERT INTO
-			Products (code, name, isactive, isdeleted, createdate, lastupdate)
-		VALUES (?, ?, ?, ?, ?, ?)
+			Skus (code, name, productid, isactive, isdeleted, createdate, lastupdate)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 
 	UPDATE = `
-		UPDATE Products
+		UPDATE Skus
 		SET
 			Code = ?,
 			Name = ?,
@@ -32,7 +32,7 @@ const (
 	`
 
 	DELETE = `
-		UPDATE Products
+		UPDATE Skus
 		SET
 			IsDeleted = 1,
 			IsActive = 0,

@@ -1,4 +1,4 @@
-package products
+package skus
 
 import (
 	"database/sql"
@@ -6,40 +6,40 @@ import (
 	"net/http"
 
 	middleware "github.com/brbnk/core/api/middlewares"
-	"github.com/brbnk/core/api/models/products"
-	s "github.com/brbnk/core/api/services/products"
+	"github.com/brbnk/core/api/models/skus"
+	s "github.com/brbnk/core/api/services/skus"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/brbnk/core/pkg/http/parser"
 	httpresponse "github.com/brbnk/core/pkg/http/response"
 	"github.com/julienschmidt/httprouter"
 )
 
-type ProductController struct {
-	service s.ProductServiceInterface
+type SkuController struct {
+	service s.SkuServiceInterface
 }
 
-func newController(ctx *application.DbContext) *ProductController {
-	return &ProductController{
-		service: s.NewService(ctx.Product),
+func newController(ctx *application.DbContext) *SkuController {
+	return &SkuController{
+		service: s.NewService(ctx.Sku),
 	}
 }
 
 func InitController(app *application.Application, h *httprouter.Router) {
 	controller := newController(app.Ctx)
 
-	h.GET("/products", controller.GetAll())
-	h.POST("/products", controller.Create())
-	h.GET("/products/:id", controller.Get())
-	h.PUT("/products/:id", controller.Update())
-	h.DELETE("/products/:id", controller.Delete())
+	h.GET("/skus", controller.GetAll())
+	h.POST("/skus", controller.Create())
+	h.GET("/skus/:id", controller.Get())
+	h.PUT("/skus/:id", controller.Update())
+	h.DELETE("/skus/:id", controller.Delete())
 }
 
-func (c *ProductController) GetAll() httprouter.Handle {
+func (c *SkuController) GetAll() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
 		response := httpresponse.New()
-		products, err := c.service.GetAllProducts()
+		products, err := c.service.GetAllSkus()
 
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -55,7 +55,7 @@ func (c *ProductController) GetAll() httprouter.Handle {
 	})
 }
 
-func (c *ProductController) Get() httprouter.Handle {
+func (c *SkuController) Get() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -67,40 +67,40 @@ func (c *ProductController) Get() httprouter.Handle {
 			return
 		}
 
-		model := &products.Product{Id: uint(id)}
+		model := &skus.Sku{Id: uint(id)}
 
-		product, err := c.service.GetProductById(model)
+		sku, err := c.service.GetSkuById(model)
 		if err != nil {
 			response.SetMessage(err.Error()).NotFound(w, r)
 			return
 		}
 
-		response.SetResult(product).Ok(w, r)
+		response.SetResult(sku).Ok(w, r)
 	})
 }
 
-func (c *ProductController) Create() httprouter.Handle {
+func (c *SkuController) Create() httprouter.Handle {
 	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
-		product := products.Product{}
+		sku := skus.Sku{}
 		response := httpresponse.New()
 
-		if err := parser.ParseBody(r.Body, &product); err != nil {
+		if err := parser.ParseBody(r.Body, &sku); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
-		if err := c.service.InsertProducts(&product); err != nil {
+		if err := c.service.InsertSku(&sku); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
-		response.SetResult(product).SetMessage("Product created with success").Ok(w, r)
+		response.SetResult(sku).SetMessage("Sku created with success").Ok(w, r)
 	})
 }
 
-func (c *ProductController) Update() httprouter.Handle {
+func (c *SkuController) Update() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -112,23 +112,23 @@ func (c *ProductController) Update() httprouter.Handle {
 			return
 		}
 
-		product := products.Product{Id: uint(id)}
+		sku := skus.Sku{Id: uint(id)}
 
-		if err := parser.ParseBody(r.Body, &product); err != nil {
+		if err := parser.ParseBody(r.Body, &sku); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
 			return
 		}
 
-		if err := c.service.UpdateProduct(&product); err != nil {
+		if err := c.service.UpdateSku(&sku); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
-		response.SetResult(product).SetMessage("Product updated with success").Ok(w, r)
+		response.SetResult(sku).SetMessage("Sku updated with success").Ok(w, r)
 	}
 }
 
-func (c *ProductController) Delete() httprouter.Handle {
+func (c *SkuController) Delete() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		defer r.Body.Close()
 
@@ -140,12 +140,12 @@ func (c *ProductController) Delete() httprouter.Handle {
 			return
 		}
 
-		product := &products.Product{Id: uint(id)}
-		if err := c.service.DeleteProduct(product); err != nil {
+		sku := &skus.Sku{Id: uint(id)}
+		if err := c.service.DeleteSku(sku); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
-		response.SetResult(product).SetMessage("Product deleted with success").Ok(w, r)
+		response.SetResult(sku).SetMessage("Sku deleted with success").Ok(w, r)
 	}
 }

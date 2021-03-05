@@ -2,12 +2,14 @@ package application
 
 import (
 	"github.com/brbnk/core/api/models/products"
+	"github.com/brbnk/core/api/models/skus"
 	"github.com/brbnk/core/cfg/db"
 	"github.com/brbnk/core/cfg/environment"
 )
 
 type DbContext struct {
 	Product products.ProductModel
+	Sku     skus.SkuModel
 }
 
 type Application struct {
@@ -21,6 +23,7 @@ func Get() (*Application, error) {
 
 	ctx := &DbContext{
 		Product: products.ProductModel{DB: db.Client},
+		Sku:     skus.SkuModel{DB: db.Client},
 	}
 
 	if err != nil {

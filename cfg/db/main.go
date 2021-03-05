@@ -1,14 +1,14 @@
 package db
 
 import (
-	"database/sql"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
 type DB struct {
-	Client *sql.DB
+	Client *sqlx.DB
 }
 
 func Get(connStr string) (*DB, error) {
@@ -27,8 +27,8 @@ func (d *DB) Close() error {
 	return d.Client.Close()
 }
 
-func connect(connStr string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", connStr)
+func connect(connStr string) (*sqlx.DB, error) {
+	db, err := sqlx.Open("mysql", connStr)
 
 	if err != nil {
 		log.Fatal(err)

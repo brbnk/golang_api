@@ -1,4 +1,4 @@
-package products
+package skus
 
 import (
 	"reflect"
@@ -10,12 +10,12 @@ import (
 )
 
 type Test struct {
-	r    ProductRepositoryInterface
+	r    SkuRepositoryInterface
 	id   uint
 	mock func()
 }
 
-func TestGetAllProducts(t *testing.T) {
+func TestGetAllSkus(t *testing.T) {
 	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -24,26 +24,27 @@ func TestGetAllProducts(t *testing.T) {
 	defer db.Close()
 
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
+	repository := NewSkuRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
 		r: repository,
 		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "isactive", "isdeleted", "createdate", "lastupdate"}).
-				AddRow(1, "1234", "Camiseta Teste 1", true, false, time, time).
-				AddRow(2, "5678", "Camiseta Teste 2", true, false, time, time).
-				AddRow(3, "1324", "Camiseta Teste 3", true, false, time, time)
+			rows := sqlmock.NewRows([]string{"id", "code", "name", "productid", "isactive", "isdeleted", "createdate", "lastupdate"}).
+				AddRow(1, "1234", "SKU Teste 1", 1, true, false, time, time).
+				AddRow(2, "5678", "SKU Teste 2", 1, true, false, time, time).
+				AddRow(3, "1324", "SKU Teste 3", 1, true, false, time, time)
 
 			mock.ExpectQuery(GETALL).WillReturnRows(rows)
 		},
 	}
 
-	expect := []Product{
+	expect := []Sku{
 		{
 			Id:         1,
 			Code:       "1234",
-			Name:       "Camiseta Teste 1",
+			ProductId:  1,
+			Name:       "SKU Teste 1",
 			IsActive:   true,
 			IsDeleted:  false,
 			CreateDate: time,
@@ -52,7 +53,8 @@ func TestGetAllProducts(t *testing.T) {
 		{
 			Id:         2,
 			Code:       "5678",
-			Name:       "Camiseta Teste 2",
+			ProductId:  1,
+			Name:       "SKU Teste 2",
 			IsActive:   true,
 			IsDeleted:  false,
 			CreateDate: time,
@@ -61,7 +63,8 @@ func TestGetAllProducts(t *testing.T) {
 		{
 			Id:         3,
 			Code:       "1324",
-			Name:       "Camiseta Teste 3",
+			ProductId:  1,
+			Name:       "SKU Teste 3",
 			IsActive:   true,
 			IsDeleted:  false,
 			CreateDate: time,
@@ -71,7 +74,7 @@ func TestGetAllProducts(t *testing.T) {
 
 	test.mock()
 
-	got, err := test.r.GetProducts()
+	got, err := test.r.GetSkus()
 	if err != nil {
 		t.Errorf("GetAllProducts() error new = %v", err)
 		return
@@ -93,25 +96,26 @@ func TestGetProductById(t *testing.T) {
 	defer db.Close()
 
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
+	repository := NewSkuRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
 		r:  repository,
 		id: 2,
 		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "isactive", "isdeleted", "createdate", "lastupdate"}).
-				AddRow(1, "1234", "Produto Teste 1", true, false, time, time).
-				AddRow(2, "4567", "Produto Teste 2", true, false, time, time)
+			rows := sqlmock.NewRows([]string{"id", "code", "name", "productid", "isactive", "isdeleted", "createdate", "lastupdate"}).
+				AddRow(1, "1234", "SKU Teste 1", 1, true, false, time, time).
+				AddRow(2, "4567", "SKU Teste 2", 1, true, false, time, time)
 
 			mock.ExpectQuery(GET).WithArgs(2).WillReturnRows(rows)
 		},
 	}
 
-	expect := &Product{
+	expect := &Sku{
 		Id:         1,
 		Code:       "1234",
-		Name:       "Produto Teste 1",
+		Name:       "SKU Teste 1",
+		ProductId:  1,
 		IsActive:   true,
 		IsDeleted:  false,
 		CreateDate: time,
@@ -120,7 +124,7 @@ func TestGetProductById(t *testing.T) {
 
 	test.mock()
 
-	got, err := test.r.GetProductById(&Product{Id: test.id})
+	got, err := test.r.GetSkuById(&Sku{Id: test.id})
 
 	if err != nil {
 		t.Errorf("GetProductById() error new = %v", err)
@@ -142,21 +146,22 @@ func TestCreateProduct(t *testing.T) {
 	defer db.Close()
 
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
+	repository := NewSkuRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
 		r: repository,
 		mock: func() {
 			mock.ExpectPrepare(CREATE).ExpectExec().
-				WithArgs("1234", "Camiseta Teste 1", true, false, time, time).
+				WithArgs("1234", "SKU Teste 1", 1, true, false, time, time).
 				WillReturnResult(sqlmock.NewResult(1, 1))
 		},
 	}
 
-	payload := &Product{
+	payload := &Sku{
 		Code:       "1234",
-		Name:       "Camiseta Teste 1",
+		Name:       "SKU Teste 1",
+		ProductId:  1,
 		IsActive:   true,
 		IsDeleted:  false,
 		CreateDate: time,
@@ -165,7 +170,7 @@ func TestCreateProduct(t *testing.T) {
 
 	test.mock()
 
-	err = test.r.CreateProduct(payload)
+	err = test.r.CreateSku(payload)
 	if err != nil {
 		t.Errorf("CreateProduct() ERROR >> %v", err)
 		return
@@ -185,31 +190,31 @@ func TestUpdateProduct(t *testing.T) {
 	defer db.Close()
 
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
+	repository := NewSkuRepository(sqlxDB)
 	time := time.Now()
 
 	test := &Test{
 		r: repository,
 		mock: func() {
 			mock.ExpectPrepare(UPDATE).ExpectExec().
-				WithArgs("1234", "Camiseta EDITADO 1", true, false, time, 1).
+				WithArgs("1234", "SKU EDITADO 1", true, false, time, 1).
 				WillReturnResult(sqlmock.NewResult(0, 1))
 		},
 	}
 
 	test.mock()
 
-	payload := &Product{
+	payload := &Sku{
 		Id:         1,
 		Code:       "1234",
-		Name:       "Camiseta EDITADO 1",
+		Name:       "SKU EDITADO 1",
 		IsActive:   true,
 		IsDeleted:  false,
 		CreateDate: time,
 		LastUpdate: time,
 	}
 
-	err = test.r.UpdateProduct(payload)
+	err = test.r.UpdateSku(payload)
 	if err != nil {
 		t.Errorf("UpdateProduct() ERROR >> %v", err)
 		return
@@ -229,7 +234,7 @@ func TestDeleteProduct(t *testing.T) {
 	defer db.Close()
 
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
+	repository := NewSkuRepository(sqlxDB)
 
 	time := time.Now()
 
@@ -244,7 +249,7 @@ func TestDeleteProduct(t *testing.T) {
 
 	test.mock()
 
-	err = test.r.DeleteProduct(&Product{Id: 1, LastUpdate: time})
+	err = test.r.DeleteSku(&Sku{Id: 1, LastUpdate: time})
 	if err != nil {
 		t.Errorf("DeleteProduct() ERROR >> %v", err)
 		return
