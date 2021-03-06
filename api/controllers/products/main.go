@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	middleware "github.com/brbnk/core/api/middlewares"
+	"github.com/brbnk/core/api/models/base"
 	"github.com/brbnk/core/api/models/products"
-	"github.com/brbnk/core/api/services"
+	s "github.com/brbnk/core/api/services/products"
 	"github.com/brbnk/core/cfg/application"
 	"github.com/brbnk/core/pkg/http/parser"
 	httpresponse "github.com/brbnk/core/pkg/http/response"
@@ -15,12 +16,12 @@ import (
 )
 
 type ProductController struct {
-	service services.ProductServiceInterface
+	service s.ProductServiceInterface
 }
 
 func newController(ctx *application.DbContext) *ProductController {
 	return &ProductController{
-		service: services.NewService(ctx.Product),
+		service: s.NewService(ctx.Product),
 	}
 }
 
@@ -32,6 +33,8 @@ func InitController(app *application.Application, h *httprouter.Router) {
 	h.GET("/products/:id", controller.Get())
 	h.PUT("/products/:id", controller.Update())
 	h.DELETE("/products/:id", controller.Delete())
+
+	h.GET("/products/:id/skus", controller.GetSkuByProductId())
 }
 
 func (c *ProductController) GetAll() httprouter.Handle {
@@ -67,11 +70,14 @@ func (c *ProductController) Get() httprouter.Handle {
 			return
 		}
 
-		model := &products.Product{Id: uint(id)}
-
-		product, err := c.service.GetProductById(model)
+		product, err := c.service.GetProductById(uint(id))
 		if err != nil {
-			response.SetMessage(err.Error()).NotFound(w, r)
+			if errors.Is(err, sql.ErrNoRows) {
+				response.NoContent(w, r)
+				return
+			}
+
+			response.SetMessage(err.Error()).InternalServerError(w, r)
 			return
 		}
 
@@ -112,7 +118,7 @@ func (c *ProductController) Update() httprouter.Handle {
 			return
 		}
 
-		product := products.Product{Id: uint(id)}
+		product := products.Product{Base: base.Base{Id: uint(id)}}
 
 		if err := parser.ParseBody(r.Body, &product); err != nil {
 			response.SetMessage("Invalid payload!").BadRequest(w, r)
@@ -140,12 +146,38 @@ func (c *ProductController) Delete() httprouter.Handle {
 			return
 		}
 
-		product := &products.Product{Id: uint(id)}
-		if err := c.service.DeleteProduct(product); err != nil {
+		if err := c.service.DeleteProduct(uint(id)); err != nil {
 			response.SetMessage(err.Error()).BadRequest(w, r)
 			return
 		}
 
-		response.SetResult(product).SetMessage("Product deleted with success").Ok(w, r)
+		response.SetMessage("Product deleted with success").Ok(w, r)
 	}
+}
+
+func (c *ProductController) GetSkuByProductId() httprouter.Handle {
+	return middleware.Apply(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		defer r.Body.Close()
+
+		response := httpresponse.New()
+
+		id, err := parser.ParseId(p.ByName("id"))
+		if err != nil {
+			response.SetMessage("Invalid Paramater 'id'").BadRequest(w, r)
+			return
+		}
+
+		result, err := c.service.GetSkuByProductId(uint(id))
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				response.NoContent(w, r)
+				return
+			}
+
+			response.SetMessage(err.Error()).InternalServerError(w, r)
+			return
+		}
+
+		response.SetResult(result).Ok(w, r)
+	})
 }

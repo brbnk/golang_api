@@ -1,20 +1,17 @@
 package products
 
+// CRUD Operations
 const (
 	GET = `
-		SELECT
-			p.Id, p.Code, p.Name, p.IsActive, p.IsDeleted,
-			p.CreateDate, p.LastUpdate
-		FROM Products p
+		SELECT *
+		FROM Products
 		WHERE Id = ?
 	`
 
 	GETALL = `
-		SELECT
-			p.Id, p.Code, p.Name, p.IsActive,
-			p.IsDeleted, p.CreateDate, p.LastUpdate
+		SELECT *
 		FROM Products p
-		WHERE IsDeleted = 0
+		WHERE p.IsDeleted = 0
 		ORDER BY p.Code;
 	`
 
@@ -34,6 +31,7 @@ const (
 			LastUpdate = ?
 		WHERE Id = ?
 	`
+
 	DELETE = `
 		UPDATE Products
 		SET
@@ -41,5 +39,13 @@ const (
 			IsActive = 0,
 			LastUpdate = ?
 		WHERE Id = ?
+	`
+)
+
+const (
+	GET_SKUS_BY_PRODUCTID = `
+		SELECT *
+		FROM Skus s
+		WHERE s.IsDeleted = 0 and s.ProductId = ?;
 	`
 )
