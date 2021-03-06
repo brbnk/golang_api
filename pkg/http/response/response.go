@@ -58,6 +58,11 @@ func (h *HttpResponse) NotFound(w http.ResponseWriter, r *http.Request) {
 		write(w, r)
 }
 
+func (h *HttpResponse) NoContent(w http.ResponseWriter, r *http.Request) {
+	h.SetStatus(http.StatusNoContent).
+		write(w, r)
+}
+
 func (h *HttpResponse) Ok(w http.ResponseWriter, r *http.Request) {
 	h.SetStatus(http.StatusOK).
 		write(w, r)

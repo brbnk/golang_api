@@ -72,7 +72,12 @@ func (c *ProductController) Get() httprouter.Handle {
 
 		product, err := c.service.GetProductById(uint(id))
 		if err != nil {
-			response.SetMessage(err.Error()).NotFound(w, r)
+			if errors.Is(err, sql.ErrNoRows) {
+				response.NoContent(w, r)
+				return
+			}
+
+			response.SetMessage(err.Error()).InternalServerError(w, r)
 			return
 		}
 
@@ -162,12 +167,17 @@ func (c *ProductController) GetSkuByProductId() httprouter.Handle {
 			return
 		}
 
-		sku, err := c.service.GetSkuByProductId(uint(id))
+		result, err := c.service.GetSkuByProductId(uint(id))
 		if err != nil {
-			response.SetMessage(err.Error()).NotFound(w, r)
+			if errors.Is(err, sql.ErrNoRows) {
+				response.NoContent(w, r)
+				return
+			}
+
+			response.SetMessage(err.Error()).InternalServerError(w, r)
 			return
 		}
 
-		response.SetResult(sku).Ok(w, r)
+		response.SetResult(result).Ok(w, r)
 	})
 }

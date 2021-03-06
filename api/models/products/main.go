@@ -133,7 +133,7 @@ func (m ProductModel) GetSkusByProductId(productid uint) (*ProductSkuViewModel, 
 
 	err := m.DB.Get(vm, GET, productid)
 	if err != nil {
-		return nil, log.LogMethodError("GetSkusByProductId (Product GET)", err)
+		return nil, err
 	}
 
 	err = m.DB.Select(&vm.Skus, GET_SKUS_BY_PRODUCTID, productid)
