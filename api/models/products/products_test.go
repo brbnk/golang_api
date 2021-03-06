@@ -270,40 +270,5 @@ func TestDeleteProduct(t *testing.T) {
 }
 
 func TestGetProductAndSkusTest(t *testing.T) {
-	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-
-	defer db.Close()
-
-	sqlxDB := sqlx.NewDb(db, "sqlmock")
-	repository := NewProductRepository(sqlxDB)
-
-	time := time.Now()
-
-	test := &Test{
-		r:  repository,
-		id: 1,
-		mock: func() {
-			rows := sqlmock.NewRows([]string{"id", "code", "name", "isactive", "isdeleted", "createdate", "lastupdate"}).
-				AddRow(1, "1234", "Camiseta Teste 1", true, false, time, time).
-				AddRow(2, "5678", "Camiseta Teste 2", true, false, time, time).
-				AddRow(3, "1324", "Camiseta Teste 3", true, false, time, time)
-
-			mock.ExpectQuery(GETALL).WillReturnRows(rows)
-		},
-	}
-
-	test.mock()
-
-	err = test.r.DeleteProduct(test.id, time)
-	if err != nil {
-		t.Errorf("DeleteProduct() ERROR >> %v", err)
-		return
-	}
-
-	if !reflect.DeepEqual(err, nil) {
-		t.Errorf("DeleteProduct() = %v, expect %v", err, nil)
-	}
+	t.Error()
 }

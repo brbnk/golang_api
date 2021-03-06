@@ -4,6 +4,8 @@ import (
 	"time"
 
 	b "github.com/brbnk/core/api/models/base"
+	"github.com/brbnk/core/api/models/skus"
+	"github.com/brbnk/core/pkg/log"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -11,6 +13,11 @@ type Product struct {
 	b.Base
 	Code string `json:"code" db:"Code"`
 	Name string `json:"name" db:"Name"`
+}
+
+type ProductSkuViewModel struct {
+	Product
+	Skus []*skus.Sku `json:"skus"`
 }
 
 type ProductModel struct {
@@ -23,6 +30,7 @@ type ProductRepositoryInterface interface {
 	CreateProduct(*Product) error
 	UpdateProduct(*Product) error
 	DeleteProduct(uint, time.Time) error
+	GetSkusByProductId(uint) (*ProductSkuViewModel, error)
 }
 
 func NewProductRepository(db *sqlx.DB) ProductRepositoryInterface {
@@ -80,7 +88,7 @@ func (m ProductModel) CreateProduct(p *Product) error {
 		return err
 	}
 
-	_, err = stmt.Exec(p.Code, p.Name, p.IsActive, p.IsDeleted, p.CreateDate, p.LastUpdate)
+	_, err = stmt.Exec(p.Code, p.Name, p.Base.IsActive, p.Base.IsDeleted, p.Base.CreateDate, p.Base.LastUpdate)
 	if err != nil {
 		return err
 	}
@@ -95,7 +103,7 @@ func (m ProductModel) UpdateProduct(p *Product) error {
 		return err
 	}
 
-	_, err = stmt.Exec(p.Code, p.Name, p.IsActive, p.IsDeleted, p.LastUpdate, p.Id)
+	_, err = stmt.Exec(p.Code, p.Name, p.Base.IsActive, p.Base.IsDeleted, p.Base.LastUpdate, p.Base.Id)
 	if err != nil {
 		return err
 	}
@@ -116,4 +124,22 @@ func (m ProductModel) DeleteProduct(id uint, t time.Time) error {
 	}
 
 	return nil
+}
+
+func (m ProductModel) GetSkusByProductId(productid uint) (*ProductSkuViewModel, error) {
+	vm := &ProductSkuViewModel{
+		Skus: make([]*skus.Sku, 0),
+	}
+
+	err := m.DB.Get(vm, GET, productid)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.DB.Select(&vm.Skus, GET_SKUS_BY_PRODUCTID, productid)
+	if err != nil {
+		return nil, log.LogMethodError("GetSkusByProductId (Skus SELECT)", err)
+	}
+
+	return vm, nil
 }

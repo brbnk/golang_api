@@ -1,5 +1,6 @@
 package products
 
+// CRUD Operations
 const (
 	GET = `
 		SELECT *
@@ -38,5 +39,13 @@ const (
 			IsActive = 0,
 			LastUpdate = ?
 		WHERE Id = ?
+	`
+)
+
+const (
+	GET_SKUS_BY_PRODUCTID = `
+		SELECT *
+		FROM Skus s
+		WHERE s.IsDeleted = 0 and s.ProductId = ?;
 	`
 )

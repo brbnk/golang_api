@@ -13,9 +13,10 @@ type ProductService struct {
 type ProductServiceInterface interface {
 	GetAllProducts() ([]*products.Product, error)
 	GetProductById(uint) (*products.Product, error)
-	InsertProducts(p *products.Product) error
-	UpdateProduct(p *products.Product) error
+	InsertProducts(*products.Product) error
+	UpdateProduct(*products.Product) error
 	DeleteProduct(uint) error
+	GetSkuByProductId(uint) (*products.ProductSkuViewModel, error)
 }
 
 func NewService(ctx products.ProductRepositoryInterface) *ProductService {
@@ -70,4 +71,13 @@ func (s *ProductService) DeleteProduct(id uint) error {
 	}
 
 	return nil
+}
+
+func (s *ProductService) GetSkuByProductId(productid uint) (*products.ProductSkuViewModel, error) {
+	result, err := s.repository.GetSkusByProductId(productid)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
