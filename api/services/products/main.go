@@ -45,6 +45,7 @@ func (s *ProductService) GetProductById(id uint) (*products.Product, error) {
 func (s *ProductService) InsertProducts(p *products.Product) error {
 	p.CreateDate = time.Now()
 	p.LastUpdate = time.Now()
+	p.IsDeleted = false
 
 	if err := s.repository.CreateProduct(p); err != nil {
 		return err

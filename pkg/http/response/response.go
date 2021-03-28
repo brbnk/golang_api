@@ -9,7 +9,7 @@ type HttpResponse struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
 	Success bool        `json:"success"`
-	Data    interface{} `json:"data"`
+	Result  interface{} `json:"result"`
 }
 
 func New() *HttpResponse {
@@ -36,7 +36,7 @@ func (h *HttpResponse) SetSuccess(s bool) *HttpResponse {
 }
 
 func (h *HttpResponse) SetResult(r interface{}) *HttpResponse {
-	h.Data = r
+	h.Result = r
 	return h
 }
 
