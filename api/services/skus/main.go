@@ -44,6 +44,7 @@ func (s *SkuService) GetSkuById(id uint) (*skus.Sku, error) {
 func (s *SkuService) InsertSku(p *skus.Sku) error {
 	p.CreateDate = time.Now()
 	p.LastUpdate = time.Now()
+	p.IsDeleted = false
 
 	if err := s.repository.CreateSku(p); err != nil {
 		return err

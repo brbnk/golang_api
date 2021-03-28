@@ -15,8 +15,8 @@ func chain(f httprouter.Handle, m ...Middleware) httprouter.Handle {
 
 func Apply(f httprouter.Handle) httprouter.Handle {
 	mw := []Middleware{
-		SetCors,
 		SetHeader,
+		SetCors,
 	}
 	return chain(f, mw...)
 }
